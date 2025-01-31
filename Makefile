@@ -3,6 +3,10 @@ PROJECT_VERSION := $$(cat Cargo.toml | grep version | head -n 1 | awk '{print $$
 GIT_REFERENCE := $$(git log -1 --pretty=%h)
 
 release:
-	git push
+	cargo workspace-version update $(PROJECT_VERSION)
+	git add kapot
+	git commit -m "Update version to $(PROJECT_VERSION)"
 	git tag v$(PROJECT_VERSION) --force
+	git tag $(PROJECT_VERSION) --force 
 	git push --tags --force
+	git push
