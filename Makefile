@@ -12,9 +12,9 @@ release:
 	git push --tags --force
 
 publish:
-	# cargo publish -p kapot-cache
+	cargo publish -p kapot-cache
 	cargo publish -p kapot-core
-	cargo publish -p kapot-client
 	cargo publish -p kapot-executor
 	cargo publish -p kapot-scheduler
+	cargo publish -p kapot
 	cargo publish -p kapot-cli
