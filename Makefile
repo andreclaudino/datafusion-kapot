@@ -10,3 +10,11 @@ release:
 	git tag $(PROJECT_VERSION) --force 
 	git push
 	git push --tags --force
+
+publish: release
+	cargo publish -p kapot-cli
+	cargo publish -p kapot-cache
+	cargo publish -p kapot-client
+	cargo publish -p kapot-core
+	cargo publish -p kapot-executor
+	cargo publish -p kapot-scheduler
