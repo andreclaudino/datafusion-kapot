@@ -28,9 +28,9 @@ edition = "2021"
 rust-version = "1.72"
 
 [dependencies]
-kapot-core = { path = "../core", features = ["object-stores"] }
-kapot-executor = { path = "../executor",  optional = true }
-kapot-scheduler = { path = "../scheduler", optional = true }
+kapot-core = { version = "0.2.0", path = "../core", features = ["object-stores"] }
+kapot-executor = { version = "0.2.0", path = "../executor",  optional = true }
+kapot-scheduler = { version = "0.2.0", path = "../scheduler", optional = true }
 
 datafusion = { workspace = true }
 datafusion-proto = { workspace = true }
