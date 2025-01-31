@@ -17,7 +17,7 @@
 
 [package]
 name = "kapot-cli"
-version = "0.1.0"
+version = "0.2.0"
 description = "Command Line Client for Kapôt distributed query engine."
 authors = ["André Claudino <claudino@d2x.com.br>"]
 edition = "2021"
@@ -30,6 +30,7 @@ readme = "README.md"
 
 [dependencies]
 kapot = { path = "../client", features = ["standalone"] }
+
 clap = { workspace = true }
 datafusion = { workspace = true }
 datafusion-cli = { workspace = true }

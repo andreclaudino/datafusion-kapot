@@ -162,7 +162,7 @@ pub async fn main() -> Result<()> {
         if !rc.is_empty() {
             exec::exec_from_files(rc, &ctx, &print_options).await
         }
-        exec::exec_from_repl(&ctx, &mut print_options).await;
+        exec::execute_from_repl(&ctx, &mut print_options).await;
     }
 
     Ok(())

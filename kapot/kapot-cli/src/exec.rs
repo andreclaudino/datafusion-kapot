@@ -78,24 +78,23 @@ pub async fn exec_from_lines(
     }
 }
 
-pub async fn exec_from_files(
-    files: Vec<String>,
-    ctx: &KapotContext,
-    print_options: &PrintOptions,
-) {
+pub async fn exec_from_files(files: Vec<String>, context: &KapotContext, print_options: &PrintOptions) {
     let files = files
         .into_iter()
         .map(|file_path| File::open(file_path).unwrap())
         .collect::<Vec<_>>();
+
     for file in files {
         let mut reader = BufReader::new(file);
-        exec_from_lines(ctx, &mut reader, print_options).await;
+        exec_from_lines(context, &mut reader, print_options).await;
     }
 }
 
 /// run and execute SQL statements and commands against a context with the given print options
-pub async fn exec_from_repl(ctx: &KapotContext, print_options: &mut PrintOptions) {
+pub async fn execute_from_repl(ctx: &KapotContext, print_options: &mut PrintOptions) {
+
     let mut rl = Editor::new().expect("created editor");
+    
     rl.set_helper(Some(CliHelper::new(
         &ctx.context()
             .task_ctx()
@@ -113,7 +112,9 @@ pub async fn exec_from_repl(ctx: &KapotContext, print_options: &mut PrintOptions
         match rl.readline("❯ ") {
             Ok(line) if line.starts_with('\\') => {
                 rl.add_history_entry(line.trim_end()).unwrap();
+                
                 let command = line.split_whitespace().collect::<Vec<_>>().join(" ");
+
                 if let Ok(cmd) = &command[1..].parse::<Command>() {
                     match cmd {
                         Command::Quit => break,
@@ -145,6 +146,7 @@ pub async fn exec_from_repl(ctx: &KapotContext, print_options: &mut PrintOptions
                     eprintln!("'\\{}' is not a valid command", &line[1..]);
                 }
             }
+
             Ok(line) => {
                 rl.add_history_entry(line.trim_end()).unwrap();
                 match exec_and_print(ctx, &print_options, line).await {
@@ -170,11 +172,7 @@ pub async fn exec_from_repl(ctx: &KapotContext, print_options: &mut PrintOptions
     rl.save_history(".history").ok();
 }
 
-async fn exec_and_print(
-    ctx: &KapotContext,
-    print_options: &PrintOptions,
-    sql: String,
-) -> Result<()> {
+async fn exec_and_print(ctx: &KapotContext, print_options: &PrintOptions, sql: String) -> Result<()> {
     let now = Instant::now();
     let df = ctx.sql(&sql).await?;
     let schema = Arc::new(df.schema().as_arrow().clone());
