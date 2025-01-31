@@ -156,4 +156,4 @@ The output should look similar to the following table.
 +-----------------+--------------------------+--------------------------+--------------------------+--------------------------+
 ```
 
-More [examples](https://github.com/apache/arrow-kapot/tree/main/examples) can be found in the arrow-kapot repository.
+More [examples](https://github.com/neurono-ml/kapot/tree/main/examples) can be found in the arrow-kapot repository.
