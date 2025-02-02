@@ -45,7 +45,10 @@ tokio = "1.0"
 [features]
 azure = ["kapot-core/azure"]
 default = []
-hdfs = ["kapot-core/hdfs"]
-hdfs3 = ["kapot-core/hdfs3"]
 s3 = ["kapot-core/s3"]
+gcs = ["kapot-core/gcs"]
+mgc = ["kapot-core/mgc"]
+datafusion = []
+object-stores = ["kapot-core/object-stores"]
 standalone = ["kapot-executor", "kapot-scheduler"]
+

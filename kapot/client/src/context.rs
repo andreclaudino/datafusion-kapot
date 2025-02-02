@@ -20,7 +20,7 @@
 use datafusion::arrow::datatypes::SchemaRef;
 use datafusion::execution::context::DataFilePaths;
 use datafusion::sql::TableReference;
-use kapot_core::object_store_registry::KapotObjectStoreRegistry;
+
 use log::info;
 use parking_lot::Mutex;
 use sqlparser::ast::Statement;

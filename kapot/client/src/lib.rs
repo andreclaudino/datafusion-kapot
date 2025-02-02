@@ -20,3 +20,6 @@
 pub mod columnar_batch;
 pub mod context;
 pub mod prelude;
+
+#[cfg(feature = "datafusion")]
+pub use datafusion;

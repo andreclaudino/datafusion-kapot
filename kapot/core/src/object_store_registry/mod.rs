@@ -1,4 +1,3 @@
-mod constants;
 // Licensed to the Apache Software Foundation (ASF) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -19,13 +18,11 @@ mod constants;
 #[cfg(not(windows))]
 pub mod cache;
 
-use constants::{MGC_ACCESS_KEY_DEFAULT, MGC_ACCESS_KEY_VAR, MGC_ENDPOINT_DEFAULT, MGC_ENDPOINT_VAR, MGC_REGION_DEFAULT, MGC_REGION_VAR, MGC_SECRET_KEY_DEFAULT, MGC_SECRET_KEY_VAR};
 use datafusion::common::{DataFusionError, HashMap};
 use datafusion::datasource::object_store::{
     DefaultObjectStoreRegistry, ObjectStoreRegistry,
 };
 
-use datafusion::prelude::SessionContext;
 #[cfg(feature = "s3")]
 use object_store::aws::AmazonS3Builder;
 #[cfg(feature = "azure")]
@@ -33,9 +30,9 @@ use object_store::azure::MicrosoftAzureBuilder;
 #[cfg(feature = "gcs")]
 use object_store::gcp::GoogleCloudStorageBuilder;
 use object_store::local::LocalFileSystem;
-use object_store::ObjectStore;
-use std::env;
+use object_store::{ClientOptions, ObjectStore, RetryConfig};
 use std::sync::Arc;
+use std::time::Duration;
 use url::Url;
 
 /// An object store detector based on which features are enable for different kinds of object stores
@@ -96,6 +93,34 @@ impl KapotObjectStoreRegistry {
             }
         }
 
+        #[cfg(feature = "mgc")]
+        {
+            if url_str.starts_with("mgc://") || url_str.starts_with("mg://"){
+                log::debug!("Selected magalu Cloud object store for url {}", url);
+
+                if let Some(bucket_name) = url.host_str() {
+                    let store = build_mgc_object_store(url, bucket_name)?;
+
+                    log::debug!("Object store for {} successfully created", url);
+
+                    return Ok(store);
+                }
+                // Support Alibaba Cloud OSS
+                // Use S3 compatibility mode to access Alibaba Cloud OSS
+                // The `AWS_ENDPOINT` should have bucket name included
+            } else if url_str.starts_with("oss://") || url_str.starts_with("oci://") {
+                if let Some(bucket_name) = url.host_str() {
+                    let store = Arc::new(
+                        AmazonS3Builder::from_env()
+                            .with_virtual_hosted_style_request(true)
+                            .with_bucket_name(bucket_name)
+                            .build()?,
+                    );
+                    return Ok(store);
+                }
+            }
+        }
+
         #[cfg(feature = "azure")]
         {
             if url_str.starts_with("azure://") || url_str.starts_with("az://") {
@@ -135,6 +160,86 @@ impl KapotObjectStoreRegistry {
         )))
     }
 }
+
+
+fn build_mgc_object_store(url: &Url, bucket_name: &str) -> Result<Arc<object_store::aws::AmazonS3>, DataFusionError> {
+    log::debug!("Bucket is {} for url {}", bucket_name, url);
+    const MGC_DEFAULT_REGION: &str = "br-se1";
+
+    let retry_config = RetryConfig{
+        max_retries: 50,
+        ..RetryConfig::default()
+    };
+
+    let http_timeout_int =
+        std::env::var("MGC_HTTP_TIMEOUT")
+            .unwrap_or("120".to_owned())
+            .parse::<u64>()
+            .unwrap_or(120);
+    let http_timeout_duration = Duration::from_secs(http_timeout_int);
+
+    let client_options =
+        ClientOptions::new()
+            .with_timeout(http_timeout_duration)
+            .with_http2_keep_alive_while_idle()
+            .with_allow_invalid_certificates(true);
+            
+    let mut store_builder =
+        AmazonS3Builder::from_env()
+            .with_client_options(client_options)
+            .with_retry(retry_config)
+            .with_bucket_name(bucket_name);
+
+    if let Ok(access_key) = std::env::var("MGC_ACCESS_KEY") {
+        store_builder = store_builder.with_access_key_id(access_key);
+    } else if let Ok(access_key) = std::env::var("MGC_ACCESS_KEY_ID") {
+        store_builder = store_builder.with_access_key_id(access_key);
+    } else if let Ok(access_key) = std::env::var("ACCESS_KEY_ID") {
+        store_builder = store_builder.with_access_key_id(access_key);
+    } else if let Ok(access_key) = std::env::var("ACCESS_KEY") {
+        store_builder = store_builder.with_access_key_id(access_key);
+    }
+
+    if let Ok(secret_key) = std::env::var("MGC_SECRET_ACCESS_KEY") {
+        store_builder = store_builder.with_secret_access_key(secret_key);
+    } else if let Ok(secret_key) = std::env::var("MGC_SECRET_KEY") {
+        store_builder = store_builder.with_secret_access_key(secret_key);
+    } else if let Ok(secret_key) = std::env::var("SECRET_ACCESS_KEY") {
+        store_builder = store_builder.with_secret_access_key(secret_key);
+    } else if let Ok(secret_key) = std::env::var("SECRET_KEY") {
+        store_builder = store_builder.with_secret_access_key(secret_key);
+    }
+
+    let region =
+        if let Ok(region) = std::env::var("MGC_REGION") {
+            store_builder = store_builder.with_region(&region);
+            region
+        } else if let Ok(region) = std::env::var("REGION") {
+            store_builder = store_builder.with_region(&region);
+            region
+        } else {
+            store_builder = store_builder.with_region(MGC_DEFAULT_REGION);
+            MGC_DEFAULT_REGION.to_owned()
+        };
+
+    if let Ok(endpoint_url) = std::env::var("MGC_ENDPOINT_URL") {
+        store_builder = store_builder.with_endpoint(endpoint_url);
+    } else if let Ok(endpoint_url) = std::env::var("MGC_ENDPOINT") {
+        store_builder = store_builder.with_endpoint(endpoint_url);
+    } else if let Ok(endpoint_url) = std::env::var("ENDPOINT_URL") {
+        store_builder = store_builder.with_endpoint(endpoint_url);
+    } else if let Ok(endpoint_url) = std::env::var("ENDPOINT") {
+        store_builder = store_builder.with_endpoint(endpoint_url);
+    } else {
+        let endpoint_for_region = format!("https://{region}.magaluobjects.com");
+        store_builder = store_builder.with_endpoint(endpoint_for_region);
+    }
+
+    let store = Arc::new(store_builder.build()?);
+
+    Ok(store)
+}
+
 
 impl ObjectStoreRegistry for KapotObjectStoreRegistry {
     fn register_store(

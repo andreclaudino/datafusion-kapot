@@ -359,7 +359,7 @@ where
         .tcp_nodelay(true)
         .tcp_keepalive(Option::Some(Duration::from_secs(3600)))
         .http2_keep_alive_interval(Duration::from_secs(300))
-        .keep_alive_timeout(Duration::from_secs(20))
+        .keep_alive_timeout(Duration::from_secs(60))
         .keep_alive_while_idle(true);
     endpoint.connect().await
 }
@@ -371,7 +371,7 @@ pub fn create_grpc_server() -> Server {
         .tcp_nodelay(true)
         .tcp_keepalive(Option::Some(Duration::from_secs(3600)))
         .http2_keepalive_interval(Option::Some(Duration::from_secs(300)))
-        .http2_keepalive_timeout(Option::Some(Duration::from_secs(20)))
+        .http2_keepalive_timeout(Option::Some(Duration::from_secs(60)))
 }
 
 pub fn collect_plan_metrics(plan: &dyn ExecutionPlan) -> Vec<MetricsSet> {

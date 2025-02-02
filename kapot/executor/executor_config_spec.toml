@@ -63,7 +63,7 @@ doc = "bind grpc service port"
 [[param]]
 name = "scheduler_connect_timeout_seconds"
 type = "u16"
-default = "0"
+default = "30"
 doc = "How long to try connecting to scheduler before failing. Set to zero to fail after first attempt."
 
 [[param]]

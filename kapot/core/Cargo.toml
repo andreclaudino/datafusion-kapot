@@ -33,18 +33,6 @@ exclude = ["*.proto"]
 [package.metadata.docs.rs]
 rustc-args = ["--cfg", "docsrs"]
 
-[features]
-object-stores = ["azure", "gcs", "s3"]
-azure = ["object_store/azure"]
-s3 = ["object_store/aws"]
-gcs = ["object_store/gcp"]
-docsrs = []
-# Used for testing ONLY: causes all values to hash to the same value (test for collisions)
-force_hash_collisions = ["datafusion/force_hash_collisions"]
-# Used to enable hdfs to be registered in the ObjectStoreRegistry by default
-hdfs = ["datafusion-objectstore-hdfs/hdfs"]
-hdfs3 = ["datafusion-objectstore-hdfs/hdfs3"]
-
 [dependencies]
 ahash = { version = "0.8", default-features = false }
 arrow-flight = { workspace = true }
@@ -54,7 +42,6 @@ bytes = "1.0"
 chrono = { version = "0.4", default-features = false }
 clap = { workspace = true }
 datafusion = { workspace = true }
-datafusion-objectstore-hdfs = { version = "0.1.4", default-features = false, optional = true }
 datafusion-proto = { workspace = true }
 datafusion-proto-common = { workspace = true }
 object_store = { workspace = true }
@@ -85,6 +72,18 @@ tokio-stream = { version = "0.1", features = ["net"] }
 url = "2.2"
 uuid = { version = "1.0", features = ["v4"] }
 walkdir = "2.3.2"
+
+[features]
+object-stores = ["azure", "gcs", "s3", "mgc"]
+azure = ["object_store/azure"]
+s3 = ["object_store/aws"]
+gcs = ["object_store/gcp"]
+mgc = ["object_store/aws"]
+
+docsrs = []
+# Used for testing ONLY: causes all values to hash to the same value (test for collisions)
+force_hash_collisions = ["datafusion/force_hash_collisions"]
+
 
 [dev-dependencies]
 tempfile = "3"
