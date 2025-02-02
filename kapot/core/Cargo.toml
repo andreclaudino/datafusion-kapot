@@ -44,7 +44,7 @@ clap = { workspace = true }
 datafusion = { workspace = true }
 datafusion-proto = { workspace = true }
 datafusion-proto-common = { workspace = true }
-object_store = { workspace = true }
+object_store = { workspace = true, features = ["aws", "azure", "gcp"] }
 prost = { workspace = true }
 prost-types = { workspace = true }
 sqlparser = { workspace = true }
