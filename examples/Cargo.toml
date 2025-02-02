@@ -18,7 +18,7 @@
 [package]
 name = "kapot-examples"
 description = "kapot usage examples"
-version = "0.2.0"
+version = "0.2.1"
 homepage = "https://github.com/neurono-ml/kapot"
 repository = "https://github.com/neurono-ml/kapot"
 authors = ["Kapot Team <kapot@d2x.com.br>"]

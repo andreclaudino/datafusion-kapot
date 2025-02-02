@@ -19,7 +19,7 @@
 name = "kapot-cache"
 description = "kapot Cache"
 license = "Apache-2.0"
-version = "0.2.0"
+version = "0.2.1"
 homepage = "https://github.com/neurono-ml/kapot"
 repository = "https://github.com/neurono-ml/kapot"
 readme = "README.md"
