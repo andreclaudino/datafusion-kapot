@@ -161,7 +161,7 @@ impl KapotObjectStoreRegistry {
     }
 }
 
-
+#[cfg(feature = "mgc")]
 fn build_mgc_object_store(url: &Url, bucket_name: &str) -> Result<Arc<object_store::aws::AmazonS3>, DataFusionError> {
     log::debug!("Bucket is {} for url {}", bucket_name, url);
     const MGC_DEFAULT_REGION: &str = "br-se1";
