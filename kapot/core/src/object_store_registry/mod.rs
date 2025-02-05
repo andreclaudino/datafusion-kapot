@@ -108,16 +108,6 @@ impl KapotObjectStoreRegistry {
                 // Support Alibaba Cloud OSS
                 // Use S3 compatibility mode to access Alibaba Cloud OSS
                 // The `AWS_ENDPOINT` should have bucket name included
-            } else if url_str.starts_with("oss://") || url_str.starts_with("oci://") {
-                if let Some(bucket_name) = url.host_str() {
-                    let store = Arc::new(
-                        AmazonS3Builder::from_env()
-                            .with_virtual_hosted_style_request(true)
-                            .with_bucket_name(bucket_name)
-                            .build()?,
-                    );
-                    return Ok(store);
-                }
             }
         }
 
